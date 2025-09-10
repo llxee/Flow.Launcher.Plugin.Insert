@@ -1,3 +1,4 @@
+#define UsingDebugBlock
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -40,6 +41,15 @@ namespace Flow.Launcher.Plugin.Insert
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
+#if UsingDebugBlock
+            results.Add(new Result
+            {
+                Title = $"{warningIconPath} {iconPath}",
+                SubTitle = $"SelectedTemplate:'{_selectedTemplate}' Input:'{query.Search}' TemplatesCount:{_templates.Length}",
+                IcoPath = iconPath,
+                Action = _ => false
+            });
+#endif
             WarningResult? warning = null;
             if (string.IsNullOrEmpty(_selectedTemplate))
             {
@@ -175,7 +185,11 @@ namespace Flow.Launcher.Plugin.Insert
                     }
                 });
                 if (warning is not null)
+                {
+                    warning.IcoPath = warningIconPath;
                     results.Add(warning);
+
+                }
                 #endregion
             }
             return results;
@@ -198,6 +212,7 @@ namespace Flow.Launcher.Plugin.Insert
             {
                 Title = message;
                 SubTitle = subTitle;
+                //it does not work, although the warningIconPath is correct, it shows the icon from the other plugin "RollDice"
                 IcoPath = warningIconPath;
                 Action = _ => false;
             }
