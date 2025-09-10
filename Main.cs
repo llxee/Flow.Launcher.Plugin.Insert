@@ -19,7 +19,7 @@ namespace Flow.Launcher.Plugin.Insert
 
         public void Init(PluginInitContext context)
         {
-            //throw new NotImplementedException(_settings.FormatStrings + "REMINDERRRRRRR");
+            //throw new NotImplementedException(_settings.FormatStrings + "ForTest");
             _context = context;
             _api = context.API;
             _settings = _api.LoadSettingJsonStorage<Settings>();
@@ -47,7 +47,7 @@ namespace Flow.Launcher.Plugin.Insert
                             Action = _ =>
                             {
                                 _selectedTemplate = t;
-                                _api.ChangeQuery("is", false); // 清空查询，等待输入占位词
+                                _api.ChangeQuery("is", false); // 不会关闭窗口
                                 _api.ReQuery();
                                 return false;
                             }
@@ -65,7 +65,7 @@ namespace Flow.Launcher.Plugin.Insert
                     });
                 }
             }
-            
+
             else
             {
                 var words = string.IsNullOrWhiteSpace(query.Search)
@@ -73,23 +73,39 @@ namespace Flow.Launcher.Plugin.Insert
                 : query.Search.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
                 string preview = _selectedTemplate;
+                #region 找占位符
 
-                // for {0}、{12} 
+                // 找到所有数字占位符{1}
                 if (Regex.IsMatch(preview, @"\{\d+\}"))
                 {
-                    // 使用捕获组提取数字索引
-                    // 模式说明：\{(\d+)\}
-                    //  - (\d+)：第 1 个捕获组，捕获 1 个或多个数字，作为占位符的索引
+                    // 获取数字占位符并排序
+                    var matches = Regex.Matches(preview, @"\{(\d+)\}");
+                    var numbers = new SortedSet<int>();
+                    foreach (Match mm in matches)
+                    {
+                        if (int.TryParse(mm.Groups[1].Value, out var n))
+                            numbers.Add(n);
+                    }
+                    var map = new Dictionary<int, string>();// 编号与输入词的映射
+                    int wIndex = 0;
+                    foreach (var n in numbers)
+                    {
+                        if (wIndex >= words.Length) break;
+                        map[n] = words[wIndex++];
+                    }
+
+                    // 替换
                     preview = Regex.Replace(preview, @"\{(\d+)\}", m =>
                     {
-                        if (int.TryParse(m.Groups[1].Value, out var idx) && idx < words.Length)
-                            return words[idx];
-                        return m.Value; // keep placeholder if missing
+                        if (int.TryParse(m.Groups[1].Value, out var n) && map.TryGetValue(n, out var val))
+                            return val;
+                        return m.Value; //有就替换没有就保留
                     });
                 }
+                // {}、{name}、{any text}
                 else if (Regex.IsMatch(preview, @"\{[^}]*\}"))
                 {
-                    // for {}、{name}、{any text}
+
                     int seq = 0;
                     preview = Regex.Replace(preview, @"\{[^}]*\}", m =>
                     {
@@ -98,8 +114,10 @@ namespace Flow.Launcher.Plugin.Insert
                         return m.Value;
                     });
                 }
+                #endregion
 
-                // Option 1: put the filled string into the query box
+                #region 生成选项
+                // 插入
                 results.Add(new Result
                 {
                     Title = preview,
@@ -108,11 +126,11 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _api.ChangeQuery(preview, false);
                         _selectedTemplate = string.Empty;
-                        return false; // 保持窗口
+                        return false; 
                     }
                 });
 
-                // Option 2: copy the filled string to clipboard
+                // 复制到剪贴板
                 results.Add(new Result
                 {
                     Title = preview,
@@ -121,10 +139,10 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _api.CopyToClipboard(preview);
                         _selectedTemplate = string.Empty;
-                        return true; // 关闭窗口
+                        return true; 
                     }
                 });
-                
+                // 取消
                 results.Add(new Result
                 {
                     Title = "Cancel",
@@ -133,9 +151,10 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _selectedTemplate = string.Empty;
                         _api.ChangeQuery(string.Empty, false);
-                        return false; // 保持窗口
+                        return false; 
                     }
                 });
+                #endregion
             }
             return results;
         }
