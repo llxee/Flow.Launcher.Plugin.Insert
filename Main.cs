@@ -16,7 +16,11 @@ namespace Flow.Launcher.Plugin.Insert
         private IPublicAPI _api;
         private Settings _settings;
         private string[] _templates;
+        private string _pluginLocation ;
         private string _selectedTemplate = string.Empty;
+        public static string iconPath ;
+        public static string warningIconPath ;
+        private PluginMetadata Metadata { get; set; }
 
         public void Init(PluginInitContext context)
         {
@@ -24,7 +28,11 @@ namespace Flow.Launcher.Plugin.Insert
             _context = context;
             _api = context.API;
             _settings = _api.LoadSettingJsonStorage<Settings>();
-
+            Metadata = context.CurrentPluginMetadata;
+            //get plugin location
+            _pluginLocation = Metadata.PluginDirectory;
+            iconPath = @$"{this._pluginLocation}\Images\icon.png";
+            warningIconPath = @$"{this._pluginLocation}\Images\warning.png";
             _templates = _settings.FormatStrings
             ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
@@ -45,6 +53,7 @@ namespace Flow.Launcher.Plugin.Insert
                         {
                             Title = t,
                             SubTitle = "Select this template to start filling placeholders",
+                            IcoPath = iconPath,
                             Action = _ =>
                             {
                                 _selectedTemplate = t;
@@ -128,6 +137,7 @@ namespace Flow.Launcher.Plugin.Insert
                 {
                     Title = preview,
                     SubTitle = "Insert into query box",
+                    IcoPath = iconPath,
                     Action = _ =>
                     {
                         _api.ChangeQuery(preview, false);
@@ -140,6 +150,7 @@ namespace Flow.Launcher.Plugin.Insert
                 results.Add(new Result
                 {
                     Title = preview,
+                    IcoPath = iconPath,
                     SubTitle = "Copy to clipboard",
                     Action = _ =>
                     {
@@ -155,6 +166,7 @@ namespace Flow.Launcher.Plugin.Insert
                 {
                     Title = "Cancel",
                     SubTitle = "Cancel and choose another template",
+                    IcoPath = iconPath,
                     Action = _ =>
                     {
                         _selectedTemplate = string.Empty;
@@ -186,7 +198,7 @@ namespace Flow.Launcher.Plugin.Insert
             {
                 Title = message;
                 SubTitle = subTitle;
-                IcoPath = @"Images\warning.png";
+                IcoPath = warningIconPath;
                 Action = _ => false;
             }
         }
