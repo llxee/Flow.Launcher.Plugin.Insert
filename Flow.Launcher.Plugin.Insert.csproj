@@ -23,6 +23,9 @@
     <Content Include="plugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Images\*.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <!-- <Content Include="SettingTemplate.yaml" CopyToOutputDirectory="Always"/> -->
   </ItemGroup>
 
