@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+  <UseWPF>true</UseWPF>
+    <AssemblyName>Flow.Launcher.Plugin.Insert</AssemblyName>
+    <PackageId>Flow.Launcher.Plugin.Insert</PackageId>
+    <Authors>llxee</Authors>
+    <PackageProjectUrl>https://github.com/llxee/Flow.Launcher.Plugin.Insert</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/llxee/Flow.Launcher.Plugin.Insert</RepositoryUrl>
+    <PackageTags>flow-launcher flow-plugin</PackageTags>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>None</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="plugin.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <!-- <Content Include="SettingTemplate.yaml" CopyToOutputDirectory="Always"/> -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Flow.Launcher.Plugin" Version="4.4.0" />
+  </ItemGroup>
+
+</Project>

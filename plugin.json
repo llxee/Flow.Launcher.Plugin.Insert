@@ -1,0 +1,12 @@
+{
+    "ID": "3C231B105B34417999E8CC7634DDFA5B",
+    "ActionKeyword": "is",
+    "Name": "Insert",
+    "Description": "a plugin that help you insert words into formatted strings",
+    "Author": "llxee",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://github.com/llxee/Flow.Launcher.Plugin.Insert",
+    "IcoPath": "icon.png",
+    "ExecuteFileName": "Flow.Launcher.Plugin.Insert.dll"
+}
