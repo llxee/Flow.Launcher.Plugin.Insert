@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Flow.Launcher.Plugin;
 using Flow.Launcher.Plugin.Insert.Model;
@@ -13,7 +14,7 @@ namespace Flow.Launcher.Plugin.Insert
     {
         private PluginInitContext _context;
         private IPublicAPI _api;
-    private Settings _settings;
+        private Settings _settings;
         private string[] _templates;
         private string _selectedTemplate = string.Empty;
 
@@ -23,7 +24,7 @@ namespace Flow.Launcher.Plugin.Insert
             _context = context;
             _api = context.API;
             _settings = _api.LoadSettingJsonStorage<Settings>();
-                    
+
             _templates = _settings.FormatStrings
             ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
@@ -31,7 +32,7 @@ namespace Flow.Launcher.Plugin.Insert
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
-
+            WarningResult? warning = null;
             if (string.IsNullOrEmpty(_selectedTemplate))
             {
                 var input = query.Search?.Trim() ?? string.Empty;
@@ -81,6 +82,11 @@ namespace Flow.Launcher.Plugin.Insert
                     // 获取数字占位符并排序
                     var matches = Regex.Matches(preview, @"\{(\d+)\}");
                     var numbers = new SortedSet<int>();
+                    if (matches.Count == 0)
+                        warning = new WarningResult("No valid placeholders found in the template.", "Please check the template format.");
+                    if (numbers.Count != _selectedTemplate.Count(c => c == '{'))
+                        warning = new WarningResult("Numbered placeholders with word placeholders.", "Word placeholders will be ignored");
+
                     foreach (Match mm in matches)
                     {
                         if (int.TryParse(mm.Groups[1].Value, out var n))
@@ -126,7 +132,7 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _api.ChangeQuery(preview, false);
                         _selectedTemplate = string.Empty;
-                        return false; 
+                        return false;
                     }
                 });
 
@@ -139,7 +145,9 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _api.CopyToClipboard(preview);
                         _selectedTemplate = string.Empty;
-                        return true; 
+                        _api.ChangeQuery(string.Empty, false);
+                        _api.ReQuery();
+                        return true;
                     }
                 });
                 // 取消
@@ -151,9 +159,11 @@ namespace Flow.Launcher.Plugin.Insert
                     {
                         _selectedTemplate = string.Empty;
                         _api.ChangeQuery(string.Empty, false);
-                        return false; 
+                        return false;
                     }
                 });
+                if (warning is not null)
+                    results.Add(warning);
                 #endregion
             }
             return results;
@@ -161,7 +171,7 @@ namespace Flow.Launcher.Plugin.Insert
 
         public System.Windows.Controls.Control CreateSettingPanel()
         {
-            
+
             return new View.SettingsControl(_settings);
         }
 
@@ -169,6 +179,16 @@ namespace Flow.Launcher.Plugin.Insert
         {
             _templates = _settings.FormatStrings
             ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+        }
+        public class WarningResult : Result
+        {
+            public WarningResult(string message, string subTitle)
+            {
+                Title = message;
+                SubTitle = subTitle;
+                IcoPath = @"Images\warning.png";
+                Action = _ => false;
+            }
         }
     }
 }
