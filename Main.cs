@@ -35,16 +35,18 @@ namespace Flow.Launcher.Plugin.Insert
             iconPath = @$"{this._pluginLocation}\Images\icon.png";
             warningIconPath = @$"{this._pluginLocation}\Images\warning.png";
             _templates = _settings.FormatStrings
-            ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
 
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
+
 #if UsingDebugBlock
+            var rs = warningIconPath == @"C:\Users\25563\AppData\Local\FlowLauncher\app-2.0.0\Plugins\Flow.Launcher.Plugin.Insert\Images\warning.png";
             results.Add(new Result
             {
-                Title = $"{warningIconPath} {iconPath}",
+                Title = $"{warningIconPath} {iconPath} {rs}",
                 SubTitle = $"SelectedTemplate:'{_selectedTemplate}' Input:'{query.Search}' TemplatesCount:{_templates.Length}",
                 IcoPath = iconPath,
                 Action = _ => false
@@ -186,9 +188,8 @@ namespace Flow.Launcher.Plugin.Insert
                 });
                 if (warning is not null)
                 {
-                    warning.IcoPath = warningIconPath;
+                    _ = warning.IcoPath == warningIconPath;
                     results.Add(warning);
-
                 }
                 #endregion
             }
@@ -212,8 +213,9 @@ namespace Flow.Launcher.Plugin.Insert
             {
                 Title = message;
                 SubTitle = subTitle;
-                //it does not work, although the warningIconPath is correct, it shows the icon from the other plugin "RollDice"
-                IcoPath = warningIconPath;
+                //Although the warningIconPath is correct, it shows the icon from the other plugin "RollDice"
+                //JUST READ IT BEFORE USING IT WILL FIX IT HOWWWWWW
+                IcoPath = warningIconPath.Trim();
                 Action = _ => false;
             }
         }
