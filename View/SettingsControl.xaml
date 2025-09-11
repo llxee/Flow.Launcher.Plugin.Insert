@@ -9,20 +9,26 @@
     <Grid Margin="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
     <TextBlock Grid.Row="0"
            Margin="0,0,0,6"
            FontWeight="Bold"
+           HorizontalAlignment="Center"
            Text="Formatted Strings (one per line)"/>
-
-    <TextBox Grid.Row="1"
+    <TextBlock Grid.Row="1"
+        Margin="0,0,0,6"
+           FontWeight="Bold"
+           HorizontalAlignment="Center"
+           Text="If the template doesn't show up, press F5 to reload the plugin data"/>
+    <TextBox Grid.Row="2"
                  MinHeight="180"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
                  VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"               
                  FontFamily="Consolas"
          Text="{Binding FormatStrings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </Grid>
