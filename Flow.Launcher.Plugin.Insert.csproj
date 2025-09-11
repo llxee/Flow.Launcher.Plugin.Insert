@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0-windows</TargetFramework>
-  <UseWPF>true</UseWPF>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <AssemblyName>Flow.Launcher.Plugin.Insert</AssemblyName>
     <PackageId>Flow.Launcher.Plugin.Insert</PackageId>
     <Authors>llxee</Authors>

@@ -1,4 +1,5 @@
 //#define UsingDebugBlock
+#pragma warning disable 1591
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace Flow.Launcher.Plugin.Insert
         private Settings _settings;
         private string[] _templates;
         private string _pluginLocation ;
-        private string _selectedTemplate = string.Empty;
+        //private string template = string.Empty;
         public static string iconPath ;
         public static string warningIconPath ;
         private PluginMetadata Metadata { get; set; }
@@ -53,7 +54,10 @@ namespace Flow.Launcher.Plugin.Insert
             });
 #endif
             WarningResult? warning = null;
-            if (string.IsNullOrEmpty(_selectedTemplate))
+            var words = string.IsNullOrWhiteSpace(query.Search)
+                ? []
+                : SplitArgsRespectQuotes(query.Search);
+            if (words.Count <= 1)
             {
                 var input = query.Search?.Trim() ?? string.Empty;
 
@@ -68,8 +72,7 @@ namespace Flow.Launcher.Plugin.Insert
                             IcoPath = iconPath,
                             Action = _ =>
                             {
-                                _selectedTemplate = t;
-                                _api.ChangeQuery("is", false); // 不会关闭窗口
+                                _api.ChangeQuery($"is \"{t}\"", false); 
                                 _api.ReQuery();
                                 return false;
                             }
@@ -90,58 +93,11 @@ namespace Flow.Launcher.Plugin.Insert
 
             else
             {
-                var words = string.IsNullOrWhiteSpace(query.Search)
-                ? Array.Empty<string>()
-                : query.Search.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                string preview = _selectedTemplate;
-                #region 找占位符
 
-                // 找到所有数字占位符{1}
-                if (Regex.IsMatch(preview, @"\{\d+\}"))
-                {
-                    // 获取数字占位符并排序
-                    var matches = Regex.Matches(preview, @"\{(\d+)\}");
-                    var numbers = new SortedSet<int>();
-                    if (matches.Count == 0)
-                        warning = new WarningResult("No valid placeholders found in the template.", "Please check the template format.");
-                    if (numbers.Count != _selectedTemplate.Count(c => c == '{'))
-                        warning = new WarningResult("Numbered placeholders with word placeholders.", "Word placeholders will be ignored");
-
-                    foreach (Match mm in matches)
-                    {
-                        if (int.TryParse(mm.Groups[1].Value, out var n))
-                            numbers.Add(n);
-                    }
-                    var map = new Dictionary<int, string>();// 编号与输入词的映射
-                    int wIndex = 0;
-                    foreach (var n in numbers)
-                    {
-                        if (wIndex >= words.Length) break;
-                        map[n] = words[wIndex++];
-                    }
-
-                    // 替换
-                    preview = Regex.Replace(preview, @"\{(\d+)\}", m =>
-                    {
-                        if (int.TryParse(m.Groups[1].Value, out var n) && map.TryGetValue(n, out var val))
-                            return val;
-                        return m.Value; //有就替换没有就保留
-                    });
-                }
-                // {}、{name}、{any text}
-                else if (Regex.IsMatch(preview, @"\{[^}]*\}"))
-                {
-
-                    int seq = 0;
-                    preview = Regex.Replace(preview, @"\{[^}]*\}", m =>
-                    {
-                        if (seq < words.Length)
-                            return words[seq++];
-                        return m.Value;
-                    });
-                }
-                #endregion
+                string preview = words.First();
+                words = words[1..];
+                warning = ReplacePlaceholders( words, ref preview);
 
                 #region 生成选项
                 // 插入
@@ -153,7 +109,6 @@ namespace Flow.Launcher.Plugin.Insert
                     Action = _ =>
                     {
                         _api.ChangeQuery(preview, false);
-                        _selectedTemplate = string.Empty;
                         return false;
                     }
                 });
@@ -167,7 +122,6 @@ namespace Flow.Launcher.Plugin.Insert
                     Action = _ =>
                     {
                         _api.CopyToClipboard(preview);
-                        _selectedTemplate = string.Empty;
                         _api.ChangeQuery(string.Empty, false);
                         _api.ReQuery();
                         return true;
@@ -181,7 +135,6 @@ namespace Flow.Launcher.Plugin.Insert
                     IcoPath = iconPath,
                     Action = _ =>
                     {
-                        _selectedTemplate = string.Empty;
                         _api.ChangeQuery(string.Empty, false);
                         return false;
                     }
@@ -195,7 +148,93 @@ namespace Flow.Launcher.Plugin.Insert
             }
             return results;
         }
+        private static List<string> SplitArgsRespectQuotes(string input)
+        {
+            var tokens = new List<string>();
+            if (string.IsNullOrWhiteSpace(input))
+                return tokens;
 
+            // 模式说明："(?<q>(?:\\.|[^"])*)"|(?<w>\S+)
+            //  - "                                            匹配开头的双引号
+            //  - (?<q>(?:\\.|[^"])*)                         具名捕获组q：匹配引号内的内容
+            //        \\.                                      匹配转义字符，如 \"、\\ 等
+            //        | [^"]                                   或匹配除双引号以外的任意字符
+            //        以上作为一个非捕获分组 (?:...)，重复 * 次
+            //  - "                                            匹配结束的双引号
+            //  - |                                            或者
+            //  - (?<w>\S+)                                   具名捕获组w：匹配连续的非空白字符（未被引号包裹的普通词）
+            var pattern = "\"(?<q>(?:\\\\.|[^\"])*)\"|(?<w>\\S+)";
+
+            foreach (Match m in Regex.Matches(input, pattern))
+            {
+                if (m.Groups["q"].Success)
+                {
+                    // 引号内的内容：还原转义的引号与反斜杠
+                    var val = m.Groups["q"].Value
+                        .Replace("\\\"", "\"")
+                        .Replace("\\\\", "\\");
+                    tokens.Add(val);
+                }
+                else if (m.Groups["w"].Success)
+                {
+                    tokens.Add(m.Groups["w"].Value);
+                }
+            }
+
+            return tokens;
+        }
+
+        private WarningResult? ReplacePlaceholders(List<string> words, ref string preview)
+        {
+            WarningResult? warning = null;
+            if (Regex.IsMatch(preview, @"\{\d+\}"))
+            {
+                // 获取数字占位符并排序
+                var matches = Regex.Matches(preview, @"\{(\d+)\}");
+                var numbers = new SortedSet<int>();
+                if (matches.Count == 0)
+                    warning = new WarningResult("No valid placeholders found in the template.", "Please check the template format.");
+                if (numbers.Count != preview.Count(c => c == '{'))
+                    warning = new WarningResult("Dont mix number placeholders with word placeholders.", "Word placeholders will be ignored");
+
+                foreach (Match mm in matches)
+                {
+                    if (int.TryParse(mm.Groups[1].Value, out var n))
+                        numbers.Add(n);
+                }
+                var map = new Dictionary<int, string>();// 编号与输入词的映射
+                int wIndex = 0;
+                foreach (var n in numbers)
+                {
+                    if (wIndex >= words.Count) break;
+                    map[n] = words[wIndex++];
+                }
+
+                // 替换
+                preview = Regex.Replace(preview, @"\{(\d+)\}", m =>
+                {
+                    if (int.TryParse(m.Groups[1].Value, out var n) && map.TryGetValue(n, out var val))
+                        return val;
+                    return m.Value; //有就替换没有就保留
+                });
+
+            }
+            // {}、{name}、{any text}
+            else if (Regex.IsMatch(preview, @"\{[^}]*\}"))
+            {
+
+                int seq = 0;
+                preview = Regex.Replace(preview, @"\{[^}]*\}", m =>
+                {
+                    if (seq < words.Count)
+                        return words[seq++];
+                    return m.Value;
+                });
+            }
+            return warning;
+        }
+
+        
         public System.Windows.Controls.Control CreateSettingPanel()
         {
 
