@@ -1,0 +1,51 @@
+name: Build Release 
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - .github/workflows/*
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      plugin_name: Flow.Launcher.Plugin.Insert
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Build project
+        run: dotnet build ${{ env.plugin_name }}.csproj --configuration Release
+
+      - name: Get version from plugin.json
+        id: version
+        uses: notiz-dev/github-action-json-property@release
+        with:
+          path: 'plugin.json'
+          prop_path: 'Version'
+
+      - name: Zip plugin
+        run: |
+          mkdir release
+          copy plugin.json release/
+          copy README.md release/
+          xcopy .\bin\Release\net7.0\ release\ /E /Y
+          powershell Compress-Archive -Path release\* -DestinationPath "${{ env.plugin_name }}.zip"
+
+      - name: Publish to GitHub Releases
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          files: '${{ env.plugin_name }}.zip'
+          tag_name: "v${{ steps.version.outputs.prop }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
