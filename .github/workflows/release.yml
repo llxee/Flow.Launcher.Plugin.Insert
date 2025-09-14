@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '7.0.x'
+          dotnet-version: '8.0.x'
 
       - name: Build project
         run: dotnet build ${{ env.plugin_name }}.csproj --configuration Release
@@ -33,12 +33,16 @@ jobs:
           path: 'plugin.json'
           prop_path: 'Version'
 
-      - name: Zip plugin
+      - name: Publish project to release folder
+        run: dotnet publish ${{ env.plugin_name }}.csproj --configuration Release -o release
+
+      - name: Include plugin.json and README in release
         run: |
-          mkdir release
           copy plugin.json release/
           copy README.md release/
-          xcopy .\bin\Release\net7.0\ release\ /E /Y
+
+      - name: Zip plugin
+        run: |
           powershell Compress-Archive -Path release\* -DestinationPath "${{ env.plugin_name }}.zip"
 
       - name: Publish to GitHub Releases
