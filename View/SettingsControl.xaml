@@ -17,10 +17,10 @@
            Margin="0,0,0,6"
            FontWeight="Bold"
            HorizontalAlignment="Center"
-           Text="Formatted Strings (one per line)"/>
+           Text="Format Strings (one per line)"/>
     <TextBlock Grid.Row="1"
         Margin="0,0,0,6"
-           FontWeight="Bold"
+           <!-- FontWeight="Bold" -->
            HorizontalAlignment="Center"
            Text="If the template doesn't show up, press F5 to reload the plugin data"/>
     <TextBox Grid.Row="2"
