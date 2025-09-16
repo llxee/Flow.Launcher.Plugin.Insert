@@ -9,6 +9,7 @@ using Flow.Launcher.Plugin.SharedCommands;
 using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 using Flow.Launcher.Plugin.Insert.View;
+using System.Globalization;
 
 namespace Flow.Launcher.Plugin.Insert
 {
@@ -18,10 +19,10 @@ namespace Flow.Launcher.Plugin.Insert
         private IPublicAPI _api;
         private Settings _settings;
         private string[] _templates;
-        private string _pluginLocation ;
+        private string _pluginLocation;
         //private string template = string.Empty;
-        public static string iconPath ;
-        public static string warningIconPath ;
+        public static string iconPath;
+        public static string warningIconPath;
         private PluginMetadata Metadata { get; set; }
 
         public void Init(PluginInitContext context)
@@ -72,7 +73,7 @@ namespace Flow.Launcher.Plugin.Insert
                             IcoPath = iconPath,
                             Action = _ =>
                             {
-                                _api.ChangeQuery($"is \"{t}\"", false); 
+                                _api.ChangeQuery($"is \"{t}\"", false);
                                 _api.ReQuery();
                                 return false;
                             }
@@ -97,7 +98,7 @@ namespace Flow.Launcher.Plugin.Insert
 
                 string preview = words.First();
                 words = words[1..];
-                warning = ReplacePlaceholders( words, ref preview);
+                warning = ReplacePlaceholders(words, ref preview);
 
                 #region 生成选项
                 // 插入
@@ -135,7 +136,7 @@ namespace Flow.Launcher.Plugin.Insert
                     IcoPath = iconPath,
                     Action = _ =>
                     {
-                        _api.ChangeQuery("is ", false);
+                        _api.ChangeQuery("is", false);
                         return false;
                     }
                 });
@@ -234,7 +235,7 @@ namespace Flow.Launcher.Plugin.Insert
             return warning;
         }
 
-        
+
         public System.Windows.Controls.Control CreateSettingPanel()
         {
 
@@ -246,15 +247,13 @@ namespace Flow.Launcher.Plugin.Insert
             _templates = _settings.FormatStrings
             ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
-        public class WarningResult : Result
+
         {
-            public WarningResult(string message, string subTitle)
+            public UnfindResult(string message, string subTitle)
             {
                 Title = message;
                 SubTitle = subTitle;
-                //Although the warningIconPath is correct, it shows the icon from the other plugin "RollDice"
-                //JUST READ IT BEFORE USING IT WILL FIX IT HOWWWWWW
-                IcoPath = warningIconPath.Trim();
+                IcoPath = iconPath;
                 Action = _ => false;
             }
         }
