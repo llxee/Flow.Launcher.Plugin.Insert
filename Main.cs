@@ -46,7 +46,7 @@ namespace Flow.Launcher.Plugin.Insert
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
-
+            
 #if UsingDebugBlock
             var rs = warningIconPath == @"C:\Users\25563\AppData\Local\FlowLauncher\app-2.0.0\Plugins\Flow.Launcher.Plugin.Insert\Images\warning.png";
             results.Add(new Result
@@ -75,7 +75,7 @@ namespace Flow.Launcher.Plugin.Insert
                             "Use this template",
                             _ =>
                             {
-                                _api.ChangeQuery($"is \"{t}\"", false);
+                                _api.ChangeQuery($"{query.ActionKeyword} \"{t}\"", false);
                                 return false;
                             }
                         ));
@@ -133,7 +133,7 @@ namespace Flow.Launcher.Plugin.Insert
                     "Cancel and choose another template",
                     _ =>
                     {
-                        _api.ChangeQuery("is ", false);
+                        _api.ChangeQuery($"{query.ActionKeyword} ", false);
                         return false;
                     }
                 ));
