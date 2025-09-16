@@ -34,12 +34,12 @@ namespace Flow.Launcher.Plugin.Insert
             _api = context.API;
             _settings = _api.LoadSettingJsonStorage<Settings>();
             Metadata = context.CurrentPluginMetadata;
-            
+
             //get plugin location
             _pluginLocation = Metadata.PluginDirectory;
-            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
-            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
-            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
+            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
+            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
             _templates = _settings.FormatStrings
                 ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
@@ -47,7 +47,7 @@ namespace Flow.Launcher.Plugin.Insert
         public List<Result> Query(Query query)
         {
             var results = new List<Result>();
-            
+
 #if UsingDebugBlock
             results.Add(new Result
             {
@@ -125,7 +125,7 @@ namespace Flow.Launcher.Plugin.Insert
                         _api.ReQuery();
                         return true;
                     }
-                ));                   
+                ));
                 // 取消
                 results.Add(new IconResult
                 (
@@ -242,10 +242,10 @@ namespace Flow.Launcher.Plugin.Insert
         public void ReloadData()
         {
             _templates = _settings.FormatStrings
-            ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
-            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
-            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+                ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
+            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
+            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L" : string.Empty)}.png";
         }
     }
 }
