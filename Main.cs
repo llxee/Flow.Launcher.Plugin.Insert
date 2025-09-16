@@ -1,5 +1,6 @@
 //#define UsingDebugBlock
 #pragma warning disable 1591
+#pragma warning disable 8632
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -48,10 +49,9 @@ namespace Flow.Launcher.Plugin.Insert
             var results = new List<Result>();
             
 #if UsingDebugBlock
-            var rs = warningIconPath == @"C:\Users\25563\AppData\Local\FlowLauncher\app-2.0.0\Plugins\Flow.Launcher.Plugin.Insert\Images\warning.png";
             results.Add(new Result
             {
-                Title = $"{warningIconPath} {iconPath} {rs}",
+                Title = $"{warningIconPath} {iconPath} ",
                 SubTitle = $"SelectedTemplate:'{_selectedTemplate}' Input:'{query.Search}' TemplatesCount:{_templates.Length}",
                 IcoPath = iconPath,
                 Action = _ => false
