@@ -8,27 +8,37 @@
              mc:Ignorable="d">
     <Grid Margin="8">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-    <TextBlock Grid.Row="0"
-           Margin="0,0,0,6"
-           FontWeight="Bold"
-           HorizontalAlignment="Center"
-           Text="Format Strings (one per line)"/>
-    <TextBlock Grid.Row="1"
-        Margin="0,0,0,6"           
-           HorizontalAlignment="Center"
-           Text="If the template doesn't show up, press F5 to reload the plugin data"/>
-    <TextBox Grid.Row="2"
+        <TextBlock Grid.Row="0"
+                   Margin="0,0,0,6"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Text="Format Strings (one per line)"/>
+        <TextBlock Grid.Row="1"
+                   Margin="0,0,0,6"
+                   HorizontalAlignment="Center"
+                   Text="If the template doesn't show up, or the icons remain unchanged, press F5 to reload the plugin data"/>
+
+        <TextBox Grid.Row="2"
                  MinHeight="180"
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
                  VerticalScrollBarVisibility="Auto"
-                 HorizontalScrollBarVisibility="Auto"               
+                 HorizontalScrollBarVisibility="Auto"
                  FontFamily="Consolas"
-         Text="{Binding FormatStrings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                 Text="{Binding FormatStrings, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <CheckBox Grid.Row="3"
+                  Content="Use White Icons"
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Left"
+                  Margin="10,10,0,0"
+                  IsChecked="{Binding UsingWhiteIcons, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
     </Grid>
+
 </UserControl>

@@ -21,8 +21,9 @@ namespace Flow.Launcher.Plugin.Insert
         private string[] _templates;
         private string _pluginLocation;
         //private string template = string.Empty;
-        public static string iconPath;
-        public static string warningIconPath;
+        public static string IconPath;
+        public static string WarningIconPath;
+        public static string MissingIconPath;
         private PluginMetadata Metadata { get; set; }
 
         public void Init(PluginInitContext context)
@@ -32,10 +33,12 @@ namespace Flow.Launcher.Plugin.Insert
             _api = context.API;
             _settings = _api.LoadSettingJsonStorage<Settings>();
             Metadata = context.CurrentPluginMetadata;
+            
             //get plugin location
             _pluginLocation = Metadata.PluginDirectory;
-            iconPath = @$"{this._pluginLocation}\Images\icon.png";
-            warningIconPath = @$"{this._pluginLocation}\Images\warning.png";
+            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
             _templates = _settings.FormatStrings
                 ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
         }
@@ -66,29 +69,26 @@ namespace Flow.Launcher.Plugin.Insert
                 {
                     if (string.IsNullOrEmpty(input) || t.StartsWith(input, StringComparison.OrdinalIgnoreCase))
                     {
-                        results.Add(new Result
-                        {
-                            Title = t,
-                            SubTitle = "Select this template to start filling placeholders",
-                            IcoPath = iconPath,
-                            Action = _ =>
+                        results.Add(new IconResult
+                        (
+                            t,
+                            "Use this template",
+                            _ =>
                             {
                                 _api.ChangeQuery($"is \"{t}\"", false);
-                                _api.ReQuery();
                                 return false;
                             }
-                        });
+                        ));
                     }
                 }
 
                 if (results.Count == 0)
                 {
-                    results.Add(new Result
-                    {
-                        Title = "No matching templates found",
-                        SubTitle = "Please try a different keyword",
-                        Action = _ => false
-                    });
+                    results.Add(new MissingResult
+                    (
+                        "No matching templates found",
+                        "Please try a different keyword"
+                    ));
                 }
             }
 
@@ -100,49 +100,46 @@ namespace Flow.Launcher.Plugin.Insert
                 words = words[1..];
                 warning = ReplacePlaceholders(words, ref preview);
 
-                #region 生成选项
+                #region 生成选项                
                 // 插入
-                results.Add(new Result
-                {
-                    Title = preview,
-                    SubTitle = "Insert into query box",
-                    IcoPath = iconPath,
-                    Action = _ =>
+                results.Add(new IconResult
+                (
+                    preview,
+                    "Insert into query box",
+                    _ =>
                     {
                         _api.ChangeQuery(preview, false);
                         return false;
                     }
-                });
+                ));
 
                 // 复制到剪贴板
-                results.Add(new Result
-                {
-                    Title = preview,
-                    IcoPath = iconPath,
-                    SubTitle = "Copy to clipboard",
-                    Action = _ =>
+                results.Add(new IconResult
+                (
+                    preview,
+                    "Copy to clipboard",
+                    _ =>
                     {
                         _api.CopyToClipboard(preview);
                         _api.ChangeQuery(string.Empty, false);
                         _api.ReQuery();
                         return true;
                     }
-                });
+                ));                   
                 // 取消
-                results.Add(new Result
-                {
-                    Title = "Cancel",
-                    SubTitle = "Cancel and choose another template",
-                    IcoPath = iconPath,
-                    Action = _ =>
+                results.Add(new IconResult
+                (
+                    "Cancel",
+                    "Cancel and choose another template",
+                    _ =>
                     {
-                        _api.ChangeQuery("is", false);
+                        _api.ChangeQuery("is ", false);
                         return false;
                     }
-                });
+                ));
                 if (warning is not null)
                 {
-                    _ = warning.IcoPath == warningIconPath;
+                    _ = warning.IcoPath == WarningIconPath;
                     results.Add(warning);
                 }
                 #endregion
@@ -246,16 +243,9 @@ namespace Flow.Launcher.Plugin.Insert
         {
             _templates = _settings.FormatStrings
             ?.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
-        }
-
-        {
-            public UnfindResult(string message, string subTitle)
-            {
-                Title = message;
-                SubTitle = subTitle;
-                IcoPath = iconPath;
-                Action = _ => false;
-            }
+            IconPath = @$"{this._pluginLocation}\Images\icon{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+            WarningIconPath = @$"{this._pluginLocation}\Images\warning{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
+            MissingIconPath = @$"{this._pluginLocation}\Images\missing{(_settings.UsingWhiteIcons ? "_L":string.Empty)}.png";
         }
     }
 }
