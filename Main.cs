@@ -135,7 +135,7 @@ namespace Flow.Launcher.Plugin.Insert
                     IcoPath = iconPath,
                     Action = _ =>
                     {
-                        _api.ChangeQuery(string.Empty, false);
+                        _api.ChangeQuery("is ", false);
                         return false;
                     }
                 });
